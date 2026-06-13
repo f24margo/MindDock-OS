@@ -70,3 +70,61 @@ EOF
 git add TRADING_LOG.md
 git commit -m "[Analyst] TRADING_LOG.md — финансовая история"
 git push origin media
+# TRADING LOG - MindDock-OS
+Historia finansovyh rezul'tatov. Tol'ko fakty i vyvody.
+
+---
+
+## 2026-06-13
+
+### gaussian_mm - 1000PEPE-USDC - v82
+
+Asia:    +$0.09  OK  - tihij rynok, TRAILING rabotaet
+Europe:  -$0.36  XX  - napravlennoe dvizhenie, STOP_LOSS x9
+USA:     +$1.06  OK  - volatilnost, TimeLimit pribylen
+Night:   +$0.55  OK  - aziatskaya, stabilno
+Itog:    +$1.34
+
+Pattern: Gauss zarabatyvaet v USA i noch'yu. Europe ubivaet.
+Vyvod: rassmotet' otklyuchenie v Europe sessiyu.
+Konfig: flat_enter=0.3, flat_exit=0.59, layers=5, interval=1m
+
+---
+
+## 2026-06-12
+
+### gaussian_mm - pervyj zapusk na reale
+
+Start:  17:00 UTC
+Volume: $476 - $3.5K za den'
+Itog:   -$0.36
+
+Problema: STOP_LOSS vyros s 3 do 27 za NY/EU sessiyu.
+Vyvod: strategiya chuvstvitelna k napravlennym dvizheniyam.
+
+### pmm_dynamic - 1000PEPE-USDC
+
+Itog: -$0.46 za den'
+Problema: 94% zakrytij = EARLY_STOP, time_limit=7200
+Gipotezy A/B/C: gotovy, ne testirovany - otlozheno
+
+---
+
+## Otkrytye voprosy
+
+1. Otklyuchit gaussian_mm v Europe sessiyu - proverit rezultat
+2. Protestirovat varianty A/B/C dlya pmm_dynamic
+3. Nakopit statistiku za nedelyu - prinyat reshenie po parametram
+
+## Shablon zapisi (kopirovat kazhdyj den')
+
+Data: YYYY-MM-DD
+Strategiya:
+Asia:
+Europe:
+USA:
+Night:
+Itog:
+Pattern:
+Vyvod:
+Konfig:
