@@ -46,3 +46,4 @@
 - [ ] EARLY_STOP fix для gaussian_mm — варианты A/B/C
 - [ ] scan_project() — автонаполнение карты
 - [ ] minddock_core.py — финальная сборка
+- [DevOps] session_stats.py путь: ~/condor/trading_agents/session_monitor/routines/
