@@ -127,3 +127,10 @@
 - Выгрузить controller_performance_snapshots за 13 дней -> TRADING_LOG
 - Построить полную картину по всем ботам (не только gaussian_mm)
 - Решить судьбу MongoDB: убрать или найти применение
+
+## MongoDB — закрыт вопрос
+MongoDB (quants_lab) = часть quants-lab framework (не наше изобретение).
+Используется: app/tasks/deployment/*, app/tasks/quantitative_methods/cointegration/*
+Назначение: stat_arb, coint deployment tasks.
+Статус: не используется (мы работаем через Condor), решение - НЕ ТРОГАТЬ, оставить готовой к будущему использованию.
+6 подключений = локальные (mongo-express + системные), не тревожно.
