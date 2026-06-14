@@ -71,3 +71,30 @@
 - Текущая версия: be542cf, отстаёт на 90 коммитов от origin/main
 - Локальные изменения НЕ закоммичены: routine_store.py, web/models.py, pyproject.toml, uv.lock
 - Неотслеживаемые (важные, наши): routines/session_stats.py, routines/position_summary.py, routines/update_bot_config.py, trading_agents/
+
+## 2026-06-14 — Обновление Condor: УСПЕШНО
+
+### Что сделано
+- Бэкап: ~/condor_backup_20260614 (1.1GB)
+- Локальные изменения сохранены: ~/MindDock-OS/knowledge/condor_local_changes_20260614/diff_before_update.patch
+- git pull: 90 коммитов, fast-forward, без конфликтов
+- Проблема: onnxruntime (через faster-whisper) не имеет колеса под macOS Intel x86_64
+- Решение: убрана зависимость faster-whisper из pyproject.toml (строка 21) — нужна только для voice/transcribe, не используется в торговле
+- uv sync прошёл успешно (197 пакетов)
+- hummingbot-api-client: 1.4.1 -> 1.5.3
+- numpy: 1.26.4 -> 2.4.2
+
+### Запуск Condor (важно!)
+ПРАВИЛЬНО:   cd ~/condor && uv run python3 main.py
+НЕПРАВИЛЬНО: cd ~/condor && python3 main.py  (ModuleNotFoundError: telegram)
+
+### Результат
+- Condor запущен, порт 8088, WebSocket работает
+- Наши файлы целы: routines/session_stats.py, position_summary.py, update_bot_config.py, trading_agents/session_monitor/
+- Новые фичи доступны: AggregatedPnlChart, ControllerPnlChart, BotRunsTab, routine_hooks
+- Боты: 0 запущено (специально остановлены перед обновлением)
+
+### TODO следующая сессия
+- Открыть localhost:8088 в браузере, проверить UI
+- Запустить gaussian_mm заново
+- Проверить новые вкладки (BotRuns, AggregatedPnl)
