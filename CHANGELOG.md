@@ -98,3 +98,32 @@
 - Открыть localhost:8088 в браузере, проверить UI
 - Запустить gaussian_mm заново
 - Проверить новые вкладки (BotRuns, AggregatedPnl)
+
+## НАЙДЕНА РЕАЛЬНАЯ БАЗА ДАННЫХ — 2026-06-14
+
+### PostgreSQL hummingbot_api (порт 5432, контейнер hummingbot-postgres)
+Подключение: `docker exec -it hummingbot-postgres psql -U hbot -d hummingbot_api`
+
+14 таблиц. ГЛАВНАЯ:
+- controller_performance_snapshots: 6034 записей, диапазон 2026-06-01 -> 2026-06-14 (13 дней!)
+  -> 5-минутные снимки PnL/volume/positions для ВСЕХ контроллеров за весь период
+  -> ЭТО НОВАЯ ФИЧА из обновления Condor (controller_performance.py)
+- bot_runs: 62 запуска ботов
+- executors, orders, trades: пусто (0) — данные по-прежнему в SQLite файлах
+
+### API доступ (без прямого psql)
+- GET /bot-orchestration/controller-performance-latest
+- GET /bot-orchestration/controller-performance-history?interval=5m
+
+### Обнаружена стратегия SOL-dynamic-v8_SOL (не отслеживали в TRADING_LOG!)
+- bot_20260601003000: realized +0.97 USDT, EARLY_STOP=1983, SL=6, TP=33
+- bot_20260601125631: realized +3.91 USDT, volume 6257 USDT
+
+### MongoDB quants_lab — подтверждено НЕ используется
+- experiments в коде = .md файлы (trading_agent/dry_runs/), не Mongo
+- quants_lab пуста
+
+### TODO следующая сессия
+- Выгрузить controller_performance_snapshots за 13 дней -> TRADING_LOG
+- Построить полную картину по всем ботам (не только gaussian_mm)
+- Решить судьбу MongoDB: убрать или найти применение
