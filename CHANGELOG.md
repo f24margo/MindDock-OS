@@ -47,3 +47,15 @@
 - [ ] scan_project() — автонаполнение карты
 - [ ] minddock_core.py — финальная сборка
 - [DevOps] session_stats.py путь: ~/condor/trading_agents/session_monitor/routines/
+
+## 2026-06-14
+
+### База данных — уточнение
+- MongoDB ЖИВАЯ: quants_lab → коллекция "experiments" (3-4 записи, EXP_001/optuna)
+- Предыдущая проверка через mongosh показала [] — вероятно смотрели через другое подключение/контейнер
+- TODO: найти скрипт который пишет в experiments, сверить с mongosh
+
+### Железо — ограничение проекта
+- MacBook Pro 11,2 (2014) · Intel i7 2.2GHz · 4 ядра · 16GB RAM
+- Docker Desktop 4.20.1 (устаревший)
+- Решение: обновлять Condor осторожно, поэтапно, с проверкой нагрузки на каждом шаге
