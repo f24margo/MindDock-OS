@@ -33,6 +33,8 @@
 | [notebooks/MindDockOS.ipynb](notebooks/MindDockOS.ipynb) | Ядро системы — Cell 1-8, реактивный цикл |
 | [knowledge/](knowledge/) | Найденные скрипты, пути, рутины Condor |
 
+| [UPDATE_PROCEDURE.md](UPDATE_PROCEDURE.md) | Процедура обновления Condor/зависимостей — локально и в облаке |
+
 ---
 
 ## Матрица ролей AI
