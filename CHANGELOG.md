@@ -65,3 +65,9 @@
 - Использует системный Python 3.12 (НЕ conda env)
 - Процесс работает непрерывно 3+ дня без перезапуска
 - Порт 8088, PID меняется при каждом запуске
+
+### Бэкап перед обновлением Condor
+- Путь: ~/condor_backup_20260614 (1.1GB)
+- Текущая версия: be542cf, отстаёт на 90 коммитов от origin/main
+- Локальные изменения НЕ закоммичены: routine_store.py, web/models.py, pyproject.toml, uv.lock
+- Неотслеживаемые (важные, наши): routines/session_stats.py, routines/position_summary.py, routines/update_bot_config.py, trading_agents/
