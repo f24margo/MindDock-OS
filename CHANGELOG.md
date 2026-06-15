@@ -168,3 +168,28 @@ gaussian-*, PEPE-dynamic_PEPE_real_USDC, PEPE-USDC_true и др. (06-04 -> 06-15
 НЕ ТРОГАТЬ: гипотезы A/B/C для pmm_dynamic EARLY_STOP, regime classifier,
 walk-forward testing — всё это менее приоритетно чем восстановление 
 proven-working конфига v8.
+
+## [Quant] Найден pmm-dynamic-best-v8.yml — 2026-06-16
+Файл: pmm_dynamic/pmm-dynamic-best-v8.yml
+ВНИМАНИЕ: в файле connector=binance_perpetual_testnet, trading_pair=BTC-USDT,
+НО реально торговался как controller_id=pmm-dynamic-best-v8 на 1000PEPE-USDC
+(bot_20260601003000, +76% за 3 дня). Видимо параметры адаптированы при деплое,
+сам YAML - референсный шаблон, не точная копия живого конфига.
+
+ПОДТВЕРЖДЁН ПАТТЕРН v8-семьи (best-v8, SOL-v8):
+- spreads ШИРОКИЕ: 0.43-1.48 (vs текущий боевой 0.001-0.0025)
+- executor_refresh_time: 45-70 (vs текущий 20)
+- macd_slow: 180 (vs текущий 26)
+- stop_loss: 0.005 (vs текущий 0.015)
+
+ГИПОТЕЗА УСИЛЕНА: текущий боевой конфиг pmm_dynamic (PEPE, узкие spreads,
+быстрый refresh) - принципиально другая, проигрывающая логика по сравнению
+с proven v8.
+
+СЛЕДУЮЩАЯ СЕССИЯ:
+1. Найти точный конфиг бота bot_20260601003000 (логи запуска, Condor history,
+   ~/condor_backup_20260614) - именно ТЕ параметры на PEPE-USDC
+2. Если не найдён - собрать гибрид: взять spread/refresh/macd_slow/natr 
+   паттерн из v8-семьи + применить к PEPE-USDC/1000PEPE-USDC
+3. Backtest гибрида на данных 06-01/04 (период когда v8 реально работал)
+   для верификации, прежде чем на реал
