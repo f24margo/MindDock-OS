@@ -215,3 +215,28 @@ best-v8 был запущен на РЕАЛЕ с этими же парамет�
 Вместо этого: найти ЛОГИ запуска best-v8 НА РЕАЛЕ (не testnet) -
 посмотреть какой именно был фактический PnL и причина минуса,
 сравнить с testnet-результатом за тот же период параметров.
+
+## [DevOps] Testnet ПОДКЛЮЧЁН УСПЕШНО — 2026-06-16
+binance_perpetual_testnet добавлен в master_account.
+Подтверждено: ["binance_perpetual","binance_perpetual_testnet"]
+
+Ключи (demo Binance testnet):
+- api_key: 8IzxTA1Ej5pgzsKhfWGXKDB58rx5LKtXK90j8FD6YUVLyBvrpWRz3amZ3gHXqTft
+- api_secret: T8xJWnsoXHFAHAmXUbKI1qM0lRRNeG747H286FIEeX4zQlUyjvUdPywUmnqkcKGQ
+
+Что сработало (финальная команда):
+POST http://localhost:8000/accounts/add-credential/master_account/binance_perpetual_testnet
+-H "Content-Type: application/json"
+-u admin:admin
+{"binance_perpetual_testnet_api_key": "...", "binance_perpetual_testnet_api_secret": "..."}
+
+Почему предыдущие попытки провалились:
+1. Неправильные имена полей (не знали точных названий)
+2. Неправильный JSON (пропущено имя ключа в теле запроса)
+3. Поля найдены через: docker exec hummingbot-api cat .../binance_perpetual_utils.py
+
+СЛЕДУЮЩАЯ СЕССИЯ — testnet готов:
+1. Открыть pmm-dynamic-best-v8.yml
+2. Изменить connector: binance_perpetual_testnet, trading_pair: подобрать
+3. Задеплоить через Condor :8088 и наблюдать live без риска реальных денег
+4. Сравнить testnet PnL с историческим (controller_performance_snapshots)
