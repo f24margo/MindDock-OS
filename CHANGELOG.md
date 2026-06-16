@@ -331,3 +331,23 @@ EARLY_STOP в pmm_dynamic = штатный механизм переставле
 Найти метрику fill rate в логах/snapshots.
 Если fills=0 при любых параметрах на testnet → testnet непригоден
 для тестирования fill-чувствительных стратегий типа PMM.
+
+## [Instructor] NotebookLM — справочник по Hummingbot — 2026-06-16
+Инструмент: NotebookLM (Google)
+Содержимое: документация + видеоуроки разработчиков Hummingbot V2
+Использование: технические вопросы по механизмам контроллеров,
+executor'ов, close types, backtesting engine
+
+Подтверждённый факт из NotebookLM:
+EARLY_STOP (код 452) = штатный механизм pmm_dynamic.
+Это переставление ордеров по MACD/NATR, а НЕ ошибка.
+Большое количество EARLY_STOP = бот активно адаптируется к рынку.
+
+Новый диагноз проблемы убытков:
+НЕ "слишком много EARLY_STOP" →
+А "ордера не филятся до EARLY_STOP" → REALIZED всегда $0
+Это принципиально разные проблемы с разными решениями.
+
+TODO: спросить NotebookLM про fill rate метрики и
+оптимальное соотношение executor_refresh_time vs spread width
+для получения fills до переставления ордеров.
