@@ -156,3 +156,14 @@ Wide: 4 trailing → плюс.
 **Конфиг wide-v8:** spreads 0.002/0.004 · refresh 120с · 
 stop_loss 0.02 · take_profit 0.008 · 
 trailing_stop activation 0.006 · delta 0.003 · macd_slow 180
+
+---
+## 2026-06-16 ночь · Asia сессия
+### PEPE-test-wide-v8 · leverage 20 · stop_loss 0.05
+Instance: pepe-wide-night-20260616-195815
+Старт: ~20:00 UTC (начало Asia)
+Конфиг: spreads 0.002/0.004 · refresh 120с · leverage 20 · SL 0.05 · TP 0.008
+Изменения vs днём: leverage 5→20, stop_loss 0.02→0.05
+Цель: проверить Asia без токсичных SL срабатываний
+narrow-v1 остановлен — доказанно убыточен
+Результат: TODO утром
