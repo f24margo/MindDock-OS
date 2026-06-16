@@ -435,3 +435,19 @@ git -C ~/quants-lab add . && git commit && git push origin main
 
 ### Объём работы: ~2-3 часа отдельной сессии
 ### НЕ смешивать с торговыми задачами
+
+## [DevOps] Уборка контейнеров — 2026-06-16
+Удалён: pepe-ab-test2-20260616-034224 (Exited)
+Остался: pepe-ab-test3-20260616-043124 (Running)
+Статистика пишется: PEPE-test-wide-v8 + PEPE-test-narrow-v1
+76 снимков каждый, последний 09:50 UTC, интервал 5 минут
+
+Вечером проверить Europe + NY сессии:
+cd ~/MindDock-OS && git pull -q && cat _draft_roadmap/NOW.md
+docker exec hummingbot-postgres psql -U hbot -d hummingbot_api -c "
+SELECT controller_id, DATE(timestamp) as day,
+(array_agg((performance::json->>'global_pnl_quote')::float ORDER BY timestamp DESC))[1] as pnl_end,
+(array_agg(performance::json->>'close_type_counts' ORDER BY timestamp DESC))[1] as close_types
+FROM controller_performance_snapshots
+WHERE controller_id IN ('PEPE-test-wide-v8','PEPE-test-narrow-v1')
+GROUP BY controller_id, DATE(timestamp) ORDER BY day;" | cat
