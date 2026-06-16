@@ -128,3 +128,31 @@ Itog:
 Pattern:
 Vyvod:
 Konfig:
+
+---
+## 2026-06-16
+### pmm_dynamic A/B тест · testnet · pepe-ab-test3 · 3ч 46м
+
+#### PEPE-test-narrow-v1 · 1000PEPE-USDT · spreads 0.001/0.0025 · refresh 20с
+Итог:    -$0.49 ❌
+Volume:  $1.8K
+TP=24 · SL=10 · EARLY_STOP=57
+**Вывод:** fills есть, но SL=0.005 слишком близко — 10 SL съедают 24 TP
+
+#### PEPE-test-wide-v8 · 1000PEPE-USDC · spreads 0.002/0.004 · refresh 120с
+Итог:    +$0.19 ✅
+Volume:  $300
+TRAILING_STOP=4 · EARLY_STOP=4
+**Вывод:** редкие но качественные fills · trailing_stop фиксирует прибыль
+
+**Паттерн:** не количество fills важно, а соотношение TP/SL.
+Narrow: 24 TP но 10 SL их перекрывают → минус.
+Wide: 4 trailing → плюс.
+
+**Вывод:** wide-v8 паттерн рабочий. Развивать.
+Для narrow: увеличить stop_loss 0.005 → 0.015-0.02
+или заменить SL на trailing_stop как в wide-v8.
+
+**Конфиг wide-v8:** spreads 0.002/0.004 · refresh 120с · 
+stop_loss 0.02 · take_profit 0.008 · 
+trailing_stop activation 0.006 · delta 0.003 · macd_slow 180
