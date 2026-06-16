@@ -402,3 +402,36 @@ Mykola промолчал т.к. суммы малые и testnet. Но прин
 
 Это касается: deploy, stop, config changes на боевых конфигах.
 НЕ касается: чтение данных, анализ, CHANGELOG, git push.
+
+## [Architect] ПЛАН: Наведение порядка в quants-lab — зафиксировано 2026-06-16
+Приоритет: СРЕДНИЙ (не следующая сессия, отдельная сессия)
+
+### Шаг 1: Создать quants_lab_navigator.md
+Файл: ~/MindDock-OS/knowledge/quants_lab_navigator.md
+Содержимое: карта всех ноутбуков — что делает, статус, порядок запуска
+Основа: список файлов уже известен (find ~/quants-lab -name "*.ipynb")
+
+### Шаг 2: Документировать каждый ноутбук
+Первая ячейка Markdown в каждом .ipynb:
+- Что делает
+- Входные данные
+- Результат
+- Статус (активный/архив/черновик)
+- Следующий шаг
+
+### Шаг 3: Удалить мусор (требует подтверждения каждого файла)
+Кандидаты на удаление:
+- research_notebooks/02_pmm_dynamic_backtest.ipynb (дубль)
+- research_notebooks/MindDockOS.ipynb (дубль)
+- pmm_simple/*Copy1*.ipynb
+- pmm_simple/*level*.ipynb
+- pmm_simple/02_pmm_dynamic_backtest.ipynb (дубль)
+
+### Шаг 4: Обновить .gitignore
+Добавить: app/data/cache/, *.egg-info/
+
+### Шаг 5: Синхронизировать quants-lab с GitHub
+git -C ~/quants-lab add . && git commit && git push origin main
+
+### Объём работы: ~2-3 часа отдельной сессии
+### НЕ смешивать с торговыми задачами
