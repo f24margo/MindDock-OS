@@ -262,3 +262,43 @@ POST http://localhost:8000/accounts/add-credential/master_account/binance_perpet
 КОНТЕКСТ: спред — не один из параметров, а ГЛАВНЫЙ параметр PMM.
 MACD/NATR влияют слабее. Optuna должна исследовать спред с максимальной
 точностью, остальное — вторично.
+
+## [DevOps] Итог сессии 2026-06-16 — полный путь
+
+### Что сделано
+1. Подтверждён testnet: binance_perpetual_testnet подключён, свечи чистые
+2. Созданы два конфига через API:
+   - PEPE-test-wide-v8: 1000PEPE-USDC, spreads 0.83/1.48, refresh 45, macd_slow 180
+   - PEPE-test-narrow-v1: 1000PEPE-USDT, spreads 0.001/0.0025, refresh 20, macd_slow 26
+3. Первый деплой (pepe-ab-test) провалился: total_amount_quote=15 → $3.75/ордер < min $5
+4. Второй деплой (pepe-ab-test2-20260616-034224) на testnet — РАБОТАЕТ
+   Positions(2) открыты, Open Orders(28) активны, свечи нормальные
+
+### Известные косяки конфигов (исправить в следующей итерации)
+- trailing_stop activation_price (0.018) > take_profit (0.002) — никогда не сработает
+- stop_loss=0.005 при wide spreads 0.83 — ликвидация раньше чем TP
+- candles_connector=binance_perpetual (реал) при connector=testnet — ОК, это правильно
+
+### Минимальный notional для 1000PEPE-USDC на Binance Perpetual
+Минимум $5 на ордер. Формула: total_amount_quote × 0.5 × 0.5 = размер ордера
+Для min $5: total_amount_quote >= 20. Безопасно: 30+
+
+### Проверка результатов (через 6-12ч)
+docker exec hummingbot-postgres psql -U hbot -d hummingbot_api -c "
+SELECT controller_id, COUNT(*) as snapshots,
+(array_agg((performance::json->>'global_pnl_quote')::float 
+  ORDER BY timestamp DESC))[1] as pnl_end,
+(array_agg(performance::json->>'close_type_counts' 
+  ORDER BY timestamp DESC))[1] as close_types
+FROM controller_performance_snapshots
+WHERE controller_id IN ('PEPE-test-wide-v8','PEPE-test-narrow-v1')
+GROUP BY controller_id;" | cat
+
+### Остановка бота если нужно
+curl -s -X POST "http://localhost:8000/bot-orchestration/stop-instance/pepe-ab-test2-20260616-034224" \
+  -u admin:admin | cat
+
+### Testnet нестабильность — известная проблема
+Binance Futures Testnet периодически деградирует: свечи на полэкрана,
+интервалы 15-20 минут. Сейчас чистый — мониторить.
+Если деградирует: остановить, перейти на реал с total_amount_quote=30, один конфиг.
