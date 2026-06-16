@@ -351,3 +351,18 @@ EARLY_STOP (код 452) = штатный механизм pmm_dynamic.
 TODO: спросить NotebookLM про fill rate метрики и
 оптимальное соотношение executor_refresh_time vs spread width
 для получения fills до переставления ордеров.
+
+## [DevOps] Dashboard :8501 — способ остановки инстансов — 2026-06-16
+URL: http://localhost:8501/instances
+Показывает: все инстансы, NET PNL, Unrealized, Volume, Active Controllers
+Кнопка Stop — работает надёжнее чем API /stop-instance (который даёт 404)
+
+Текущее состояние (07:41 UTC):
+pepe-ab-test3-20260616-043124 — Running
+- PEPE-test-wide-v8: 1000PEPE-USDC, testnet
+- PEPE-test-narrow-v1: 1000PEPE-USDT, testnet
+NET PNL: -$0.17, Volume: $199.99, возраст 9m
+REALIZED=$0 — fills ещё не было на новом инстансе
+
+Следующая проверка через 6-12ч:
+Ожидаем первые fills на wide-v8 (spreads 0.002/0.004, refresh 120с)
