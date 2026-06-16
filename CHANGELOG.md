@@ -302,3 +302,14 @@ curl -s -X POST "http://localhost:8000/bot-orchestration/stop-instance/pepe-ab-t
 Binance Futures Testnet периодически деградирует: свечи на полэкрана,
 интервалы 15-20 минут. Сейчас чистый — мониторить.
 Если деградирует: остановить, перейти на реал с total_amount_quote=30, один конфиг.
+
+## [Architect] MindDockOS Cell 3 — нужно обновить — 2026-06-16
+TODO (не срочно, в процессе работы):
+Добавить новые блоки в Knowledge Base:
+- pepe-ab-test2 (testnet бот, 2 контроллера)
+- PostgreSQL controller_performance_snapshots (живые данные 13 дней)
+- PEPE-test-wide-v8 / PEPE-test-narrow-v1 (A/B тест конфиги)
+- binance_perpetual_testnet (новый подключённый коннектор)
+
+Цель: cmd("status") показывает реальные данные из Postgres,
+а не хардкод. Интеграция Cell 8 → PostgreSQL.
