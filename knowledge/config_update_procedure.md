@@ -63,3 +63,18 @@ curl -X POST "http://localhost:8000/controllers/configs/PEPE-test-wide-v8" \
 - Condor UI показывает старый кэш — не верить UI, проверять через Шаг 2
 - Нельзя менять на лету: connector_name, trading_pair, leverage
 - Binance testnet банит IP при высокой нагрузке — это норма для testnet
+
+## ВАЖНО: Баг API при частичном обновлении
+POST /controllers/configs перезаписывает файл ТОЛЬКО переданными полями.
+Результат: файл обрезается до 3 строк → бот нельзя деплоить из Editor.
+
+### Правильный порядок при изменении параметра:
+1. Скопировать полный конфиг из инстанса:
+   cat ~/hummingbot-api/bots/instances/{bot}/conf/controllers/{config}.yml
+
+2. Восстановить полный файл через docker exec с нужным изменением:
+   docker exec hummingbot-api sh -c 'cat > /hummingbot-api/bots/conf/controllers/{config}.yml << EOF
+   ... полный конфиг ...
+   EOF'
+
+3. Проверить в Editor — файл должен быть полным и в правильной папке.
