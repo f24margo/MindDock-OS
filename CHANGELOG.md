@@ -466,3 +466,47 @@ GROUP BY controller_id, DATE(timestamp) ORDER BY day;" | cat
 ### Соответствие bot → config
 - В скрипте session_stats.py читаем конфиг из инстанса (уже на хосте)
 - Поле `_config_name` = `configs[0].stem`
+
+## [Knowledge] session_stats — расположение и статус — 2026-06-17
+### Файлы
+- Рабочий: ~/condor/trading_agents/session_monitor/routines/session_stats.py
+- Копия/бэкап: ~/MindDock-OS/knowledge/session_stats.py
+- ReportBuilder: ~/condor/reports.py (или report_builder.py) — не исследовали
+
+### Статус
+- Работает: 16 ботов, сводная таблица + детали по сессиям + графики
+- Таблица рендерится НИЖЕ графиков — ReportBuilder группирует plotly вверху
+- Это поведение Condor, не наш код — не трогать пока не нужно
+
+### Если захочем изменить порядок (таблица выше графиков)
+- Изучить ~/condor/reports.py → класс ReportBuilder → метод save()
+- Возможно нужен отдельный section/block для управления порядком
+
+## [Knowledge] Подготовка к оптимизации TP/SL/Trailing — 2026-06-17
+
+### Где лежат данные
+- Executors: SQLite в ~/hummingbot-api/bots/instances/{bot}/data/*.sqlite
+- Таблица: Executors, поля: controller_id, close_type, net_pnl_quote, filled_amount_quote
+- PostgreSQL executors пуст — данные только в SQLite
+
+### close_type коды
+- 2 = SL (Stop Loss)
+- 3 = TimeLimit
+- 4 = TrailingStop
+- 5 = EarlyStop
+- 6 = TrailingStop (вариант)
+
+### Активные контроллеры для анализа
+- PEPE-test-wide-v8 — широкие спреды, лучший результат
+- PEPE-test-narrow-v1 — узкие спреды, убыточный (доминирует SL)
+
+### Запрос для анализа по боту
+for db in ~/hummingbot-api/bots/instances/*/data/*.sqlite; do
+  echo "=== $db ==="
+  sqlite3 "$db" "SELECT controller_id, close_type, COUNT(*) as cnt, ROUND(AVG(net_pnl_quote),4) as avg_pnl, ROUND(SUM(net_pnl_quote),4) as total_pnl FROM Executors WHERE close_type IS NOT NULL GROUP BY controller_id, close_type;"
+done
+
+### Следующая сессия: оптимизация
+- Гипотеза: trailing_stop activation слишком ранний → не успевает захватить движение
+- Проверить: распределение net_pnl по close_type во времени (Asia/Europe/USA)
+- Optuna: step=0.0001, log=True для spread — зафиксировано в NOW.md
