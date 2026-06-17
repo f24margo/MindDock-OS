@@ -451,3 +451,18 @@ SELECT controller_id, DATE(timestamp) as day,
 FROM controller_performance_snapshots
 WHERE controller_id IN ('PEPE-test-wide-v8','PEPE-test-narrow-v1')
 GROUP BY controller_id, DATE(timestamp) ORDER BY day;" | cat
+
+## [Knowledge] Инфраструктура конфигов — зафиксировано 2026-06-17
+### Расположение мастер-конфигов контроллеров
+- Физически: внутри Docker контейнера `hummingbot-api`
+- Путь: `/hummingbot-api/bots/conf/controllers/*.yml`
+- Читать: `docker exec hummingbot-api cat /hummingbot-api/bots/conf/controllers/{name}.yml`
+- В Condor UI папки (PMM_MISTER и др.) — виртуальная группировка, физически flat
+
+### Конфиги инстансов (копия мастера на момент запуска)
+- Путь на хосте: `~/hummingbot-api/bots/instances/{bot}/conf/controllers/*.yml`
+- Имя конфига = имя файла без .yml (например: PEPE-test-wide-v8)
+
+### Соответствие bot → config
+- В скрипте session_stats.py читаем конфиг из инстанса (уже на хосте)
+- Поле `_config_name` = `configs[0].stem`
