@@ -510,3 +510,17 @@ done
 - Гипотеза: trailing_stop activation слишком ранний → не успевает захватить движение
 - Проверить: распределение net_pnl по close_type во времени (Asia/Europe/USA)
 - Optuna: step=0.0001, log=True для spread — зафиксировано в NOW.md
+
+## [DevOps] Binance testnet IP ban — 2026-06-17
+- Симптом: HTTP 418, "Way too many requests", IP бан на 15-30 минут
+- Причина: бот использует REST polling вместо WebSocket для статуса ордеров
+- Следствие: EarlyStop срабатывает когда бот теряет связь во время бана
+- Вывод: результаты на testnet искажены из-за rate limits
+- Решение: тестировать на реальном коннекторе с минимальным объёмом
+
+## [DevOps] Condor обновлён — 2026-06-18
+- Обновлён с 0544f64 до 0a0ee67
+- Новое: Hyperliquid интеграция, улучшения portfolio, OpenRouter
+- Проблема решена: faster-whisper удалён из pyproject.toml (onnxruntime несовместим с macOS x86_64)
+- Наши файлы целы: session_stats.py, position_summary.py, update_bot_config.py, trading_agents/
+- Бэкап: ~/condor_backup_20260618 (820MB)
