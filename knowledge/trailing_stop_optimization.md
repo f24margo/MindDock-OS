@@ -69,3 +69,41 @@ activation_price и trailing_delta.
 ## Правило
 Один параметр за раз. Минимум 1 сессия между изменениями.
 Фиксировать каждое изменение в TRADING_LOG.md.
+
+---
+
+## Эталонный конфиг для проверки — PEPE-dynamic_PEPE_real_USDC
+
+### Результаты (реальный Binance, 6-8 июня 2026)
+- Общий PnL: +1.57 / +1.68 USDT за сутки
+- Asia:   -0.35 (убыточная)
+- Europe: +0.45
+- USA:    +0.97 (лучшая)
+- Night:  +0.66
+
+### Лучшие часы UTC: 07, 13, 15, 17
+### Худшие часы UTC: 01, 04, 09, 18
+
+### Конфиг
+- connector: binance_perpetual (реал, не testnet)
+- trading_pair: 1000PEPE-USDC
+- buy/sell_spreads: [0.83, 1.48]
+- take_profit: 0.003
+- stop_loss: 0.005
+- trailing_stop: activation=0.0015, delta=0.0008
+- time_limit: 1800 (30 мин)
+- total_amount_quote: 100
+- leverage: 20
+- amounts_pct: [0.3, 0.7]
+- macd: fast=5, signal=5, slow=42
+- natr_length: 7
+
+### Отличия от текущего wide-v8
+- Спреды в 400x шире (0.83% vs 0.002%)
+- SL в 10x жёстче (0.005 vs 0.05)
+- time_limit в 8x короче (1800 vs 14400)
+- Реальный коннектор — нет IP ban артефактов
+
+### Статус
+Гипотеза для проверки — не копировать слепо.
+Сначала протестировать на testnet с теми же параметрами.
