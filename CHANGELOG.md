@@ -524,3 +524,9 @@ done
 - Проблема решена: faster-whisper удалён из pyproject.toml (onnxruntime несовместим с macOS x86_64)
 - Наши файлы целы: session_stats.py, position_summary.py, update_bot_config.py, trading_agents/
 - Бэкап: ~/condor_backup_20260618 (820MB)
+
+## [Knowledge] Condor — ветка main vs development
+- Раньше запускали с ветки development
+- Сейчас работаем с main — стабильная версия
+- Боты деплоятся корректно с main
+- При следующем обновлении: проверить есть ли разница между main и development
