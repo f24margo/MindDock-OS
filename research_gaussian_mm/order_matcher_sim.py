@@ -18,7 +18,7 @@ if __name__ == "__main__":
         GAUSS_DISTANCE_BASE = 1.678  
         MIN_NATR = 0.0005            
         MAX_NATR = 0.02              
-        WARMUP_PERIOD = 3600         
+        WARMUP_PERIOD = 7044         
         SPREAD_ELASTICITY = 0.0005  
 
         el_position = 0.0
