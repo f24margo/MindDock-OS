@@ -10,6 +10,11 @@ PnL считается способом A: realized_pnl только от зак
 (против inv_cost — средневзвешенной цены входа), комиссии отдельно
 в total_fees, unrealized_pnl — оценка незакрытой позиции по последней
 цене дня. total_pnl = realized_pnl - total_fees + unrealized_pnl.
+
+ДОБАВЛЕНО (2026-06-24): расчёт book imbalance перед каждым вызовом
+get_signals_func. Imbalance = bid_-0.20 / (bid_-0.20 + ask_0.20),
+передаётся в config["current_imbalance"] — стратегия может читать его
+и блокировать bid/ask при экстремальных значениях.
 """
 
 import numpy as np
@@ -56,6 +61,22 @@ def get_available_depth(book_row: pd.Series, spread_pct: float, side: str) -> fl
     return float(book_row[col])
 
 
+def get_imbalance(book_row: pd.Series) -> float:
+    """
+    Imbalance по ближайшим уровням ±0.20% от mid.
+    = bid_vol / (bid_vol + ask_vol), диапазон [0, 1].
+    0.5 = нейтральный стакан, >0.5 = bid-heavy, <0.5 = ask-heavy.
+    Возвращает 0.5 если данные недоступны (нейтральное значение —
+    не блокирует торговлю при отсутствии bookDepth-снэпшота).
+    """
+    bid_col = "bid_-0.20"
+    ask_col = "ask_0.20"
+    bid_vol = float(book_row[bid_col]) if bid_col in book_row.index and not pd.isna(book_row[bid_col]) else 0.0
+    ask_vol = float(book_row[ask_col]) if ask_col in book_row.index and not pd.isna(book_row[ask_col]) else 0.0
+    total = bid_vol + ask_vol
+    return bid_vol / total if total > 0 else 0.5
+
+
 def run_simulation(trades: pd.DataFrame, book: pd.DataFrame, get_signals_func, config: dict) -> dict:
     lot_size = config.get("lot_size", 0.01)
     fee = config["fee"]
@@ -79,21 +100,27 @@ def run_simulation(trades: pd.DataFrame, book: pd.DataFrame, get_signals_func, c
         trades[["timestamp"]], book_reset, on="timestamp", direction="backward"
     )
 
+    # Копируем config чтобы не мутировать оригинал снаружи цикла
+    cfg = config.copy()
+
     for i in range(len(trades)):
         row = trades.iloc[i]
         price = row["price"]
         qty = row["quantity"]
         taker_sold = row["is_buyer_maker"]
 
+        # Вычисляем book_row и imbalance ДО блока requote —
+        # чтобы get_signals_func получил актуальный imbalance
+        book_row = merged_book.iloc[i]
+        cfg["current_imbalance"] = get_imbalance(book_row)
+
         if bid_price is None or (i - last_order_update_idx) >= max_order_age:
             bid_price, ask_price, bid_spread_pct, ask_spread_pct = get_signals_func(
-                price, config, position
+                price, cfg, position
             )
             last_order_update_idx = i
             positions.append(position)
             continue
-
-        book_row = merged_book.iloc[i]
 
         if taker_sold and bid_price is not None and price <= bid_price:
             if (position + lot_size) <= max_pos:
