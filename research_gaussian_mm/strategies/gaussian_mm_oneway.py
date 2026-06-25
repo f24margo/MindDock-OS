@@ -13,6 +13,7 @@ from hummingbot.strategy_v2.controllers.market_making_controller_base import (
     MarketMakingControllerConfigBase,
 )
 from hummingbot.strategy_v2.executors.position_executor.data_types import PositionExecutorConfig
+from hummingbot.core.data_type.common import OrderType
 
 
 class GaussianMMOnewayConfig(MarketMakingControllerConfigBase):
@@ -222,4 +223,8 @@ class GaussianMMOnewayController(MarketMakingControllerBase):
             triple_barrier_config=self.config.triple_barrier_config,
             leverage=self.config.leverage,
             side=trade_type,
+            open_order_type=OrderType.LIMIT_MAKER,
         )
+
+# ПАТЧ: устанавливаем LIMIT_MAKER для получения maker rebate
+# Применяется поверх существующего get_executor_config
