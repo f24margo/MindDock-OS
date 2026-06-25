@@ -30,6 +30,7 @@ class GaussianMMOnewayConfig(MarketMakingControllerConfigBase):
     - Базовый gaussian_mm (mean-reversion): -0.328 на том же дне
     """
     controller_name:     str   = "gaussian_mm_oneway"
+    position_mode:       str   = Field(default="ONEWAY")
     candles_connector:   str   = Field(default=None)
     candles_trading_pair: str  = Field(default=None)
     interval:            str   = Field(default="1m")
