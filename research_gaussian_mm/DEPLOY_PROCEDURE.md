@@ -63,3 +63,22 @@ API URL: http://localhost:8000
 
 Логи в реальном времени:
     docker logs -f <unique_instance_name>
+
+## УРОК: ПОЧЕМУ heredoc С YAML ЛОМАЕТСЯ В ZSH
+
+Символы ^ в YAML (например в комментариях или значениях) вызывают
+zsh: unknown file attribute при использовании heredoc << EOF внутри
+многострочных конструкций. Решение:
+
+1. Использовать python3 для записи файлов с YAML-контентом:
+   python3 -c "open(path, w).write(content)"
+
+2. ИЛИ использовать простой однострочный heredoc без YAML внутри:
+   cat >> file.yml << 'EOF'
+   simple: value
+   EOF
+
+Рабочий способ добавить поле id в конфиг:
+   cat >> ~/hummingbot-api/bots/conf/controllers/gaussian_mm_oneway_pepe.yml << 'EOF'
+   id: gaussian_mm_oneway_pepe
+   EOF
