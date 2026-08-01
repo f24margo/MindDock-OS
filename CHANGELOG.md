@@ -530,3 +530,127 @@ done
 - Сейчас работаем с main — стабильная версия
 - Боты деплоятся корректно с main
 - При следующем обновлении: проверить есть ли разница между main и development
+
+## [Architect] Методология зафиксирована — 2026-06-19/20
+ПРАВИЛО (не пропускать): работать ТОЛЬКО с одним фиксированным 4-часовым окном,
+пока движок/оптимизатор не отлажен и не одобрен. Никакого multi-window /
+stratified-sampling кода до явного подтверждения от Mykola.
+AI был скорректирован за забегание вперёд по этому пункту — держать в уме.
+
+Логика бота gaussian_mm (Gaussian smoothing, NATR/ATR, flat_enter/flat_exit,
+trailing stop и т.д.) НЕ переносится в backtest get_orders без отдельного запроса.
+
+## [Quant/Algo-Dev] research_gaussian_mm — три критических бага в engine.py — 2026-06/07
+1. zero-fill bug: котировки пересчитывались до fill-check на том же тике
+2. skew sign error: bid/ask сдвигались в противоположные стороны
+3. skew overflow bug: skew = position × mult без нормализации →
+   катастрофический PnL -469093 при lot_size~6899
+   Фикс: skew = (current_position / lot_size) * inventory_skew_mult
+После фикса: baseline (single window, linear skew) = -0.69 PnL / 36 trades
+
+current_imbalance (bid/ask depth в бакетах ±0.20%) рассчитывается и передаётся
+в стратегию через config["current_imbalance"] перед каждым вызовом get_signals_func
+
+## [Quant] single_window_manual.ipynb — рабочий инструмент — июнь 2026
+Путь: research_notebooks/data_collection/single_window_manual.ipynb
+Модули через importlib регистрируются в sys.modules:
+target_engine, target_strat, sw_slice, sw_metrics, sw_vis, sw_sens, sw_conf,
+skew_shapes, gaussian_buffer
+Cell 1 перезаписывает single_window/metrics.py и sensitivity_analysis.py на диске
+при каждом запуске — источник истины это ячейка ноутбука, не файлы.
+
+## [Quant] Sensitivity и skew research — июнь 2026
+inventory_skew_mult sweep на single window: колоколообразная зависимость,
+пик на skew=0.0005 (PnL=+0.105) — текущий боевой конфиг использует 0.005 (в 10 раз выше)
+
+Сравнение форм skew:
+- tanh: ЕДИНСТВЕННЫЙ положительный результат (+0.084/12 trades)
+- linear/hardcap: -0.69/36 trades
+- log: -0.30/32 trades
+tanh предотвращает самоубийственный цикл jump-then-immediate-opposite-fill,
+видимый в linear/log.
+
+Методология: tanh зафиксирован как baseline AS-IS (sensitivity=0.005,
+max_skew_pct=0.01) без дальнейшей калибровки его собственных параметров.
+Последовательность one-axis-at-a-time: форма skew → spread → Gaussian.
+
+## [Quant] Single-window итоговое резюме — завершено 2026-06-21
+Ось 1 (форма skew): tanh — единственный положительный результат.
+Ось 2 (spread на tanh): лучший результат при 0.15% (+0.624/55 trades).
+Ось 3 (Gaussian+lag): НЕВАЛИДНА на этом окне — только gauss_window=1 проходит
+критерий валидности |final_pos| <= 1.5×lot_size; все w=3–30 накапливают
+длинную позицию против нисходящего тренда. Ось Gaussian требует
+trend-neutral окна для честной валидации.
+
+## [DevOps] A/B тестирование и инфраструктура — июнь 2026
+Сравнение PEPE-test-wide-v8 (1000PEPE-USDC, spreads [0.002, 0.004]) vs
+PEPE-test-narrow-v1 (1000PEPE-USDT).
+Находка: TrailingStop avg PnL +0.28% vs TimeLimit avg PnL +0.76% —
+trailing_delta=0.003 резал позиции слишком рано, изменено на 0.001.
+
+Binance testnet IP-баны (HTTP 418) — доминирующая причина EarlyStop на testnet,
+делает testnet-результаты ненадёжными для оценки стратегии.
+
+КРИТИЧЕСКИЙ баг API: POST /controllers/configs/{name} обрезает YAML до
+переданных полей. Всегда восстанавливать полный файл через
+docker exec hummingbot-api sh -c 'cat > /path << EOF' и проверять на диске —
+Condor UI показывает закешированные значения, доверять нельзя.
+
+## [Risk/Quant] gaussian_mm_hedge — живое тестирование — июль 2026
+Боевой конфиг использует Gaussian smoothing (gauss_length=19, 5 слоёв),
+NATR/ATR фильтры, trend_skew_mult, flat_enter/flat_exit, trailing stop —
+ничего из этого ещё нет в упрощённом backtest-движке (осознанное решение).
+
+Testnet показал доминирование EARLY_STOP, объяснимое нестабильностью backend
+Binance testnet (HTTP 408/502 на write-операциях), а не провалом стратегии.
+
+Mainnet-тест (~9.7ч, 6 июля) подтвердил ключевую находку:
+maker-сделки прибыльны (+$0.43, 134 филла), taker-выходы убыточны
+(153 филла, -$3.42) — съедают весь эдж. TIME_LIMIT, STOP_LOSS, TRAILING_STOP
+все исполняются как taker.
+
+PostgreSQL executor-level PnL анализ по close_type — в очереди как
+следующий диагностический шаг.
+
+## [DevOps] Инфраструктура — июль 2026
+Конфликт портов задокументирован: проект gromada-rontgen (conda env quants-lab,
+~/quants-lab/gromada-rontgen) занимает порт 8000 при активном kernel.
+Решение: hummingbot-api на порту 8010 (правки в
+~/hummingbot-api/docker-compose.yml, ~/dashboard/docker-compose.yml,
+~/condor/config.yml).
+
+SQLite executor-данные: ~/hummingbot-api/bots/instances/{bot}/data/*.sqlite
+CloseType enum подтверждён: 1=TIME_LIMIT, 2=STOP_LOSS, 3=TAKE_PROFIT,
+5=EARLY_STOP, 6=TRAILING_STOP, 8=FAILED, 9=COMPLETED, 10=POSITION_HOLD
+
+Баг в session_stats.py исправлен в обоих местах:
+~/condor/routines/session_stats.py
+~/condor/trading_agents/session_monitor/routines/session_stats.py
+
+## [Risk/Analyst] Эмпирические находки по сессиям — июль 2026
+Боты хорошо работают в NY/Europe сессии (первые 4-6 часов),
+деградируют во время flat Asian/night сессии.
+Ручная стратегия stop-restart на границах сессий показала положительные
+результаты (пока делается вручную).
+
+## [DevOps] Обновление всего стека до Hummingbot 2.16.0 — 2026-08-01
+- Condor: git pull 0a0ee67 → 89b2556 (89 коммитов), fast-forward без конфликтов
+  pyproject.toml/uv.lock смержены через git stash (faster-whisper остаётся удалён)
+  Новое: condor/trading_agent/ → condor/agents/ (переименование модуля),
+  память агентов (condor/memory/), интерактивные HTML-отчёты
+  Наши файлы целы: session_stats.py, position_summary.py, update_bot_config.py
+- hummingbot-api (:8010) и dashboard (:8501) обновлены через docker compose pull,
+  оба отвечают 200 на /docs и /
+- Docker Desktop НЕ обновлялся (осознанное решение — образы не требуют апдейта хоста)
+- Первый тестовый деплой gaussian_mm_hedge после апдейта: 1 минута, ручной stop,
+  зависшие ордера корректно снялись (не финальное подтверждение фикса —
+  нужен полноценный 4-6ч прогон в будний день NY/Europe для валидации)
+
+СЛЕДУЮЩАЯ СЕССИЯ:
+1. Полноценный прогон gaussian_mm_hedge в будний день (NY/Europe сессия) —
+   сверить close_type breakdown с состоянием до апдейта
+2. Проверить доступность hbot CLI внутри контейнера — новый неинтерактивный
+   интерфейс для start/stop/status без MQTT, потенциал для автоматизации
+   session-boundary рестарта
+3. Multi-window research (tanh + spread=0.15% на разных 4ч окнах) — можно
+   двигать параллельно, независимо от live-бота

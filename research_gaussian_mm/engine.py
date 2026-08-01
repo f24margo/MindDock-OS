@@ -113,6 +113,7 @@ def run_simulation(trades: pd.DataFrame, book: pd.DataFrame, get_signals_func, c
         # чтобы get_signals_func получил актуальный imbalance
         book_row = merged_book.iloc[i]
         cfg["current_imbalance"] = get_imbalance(book_row)
+        cfg["current_ts"] = row["timestamp"]
 
         if bid_price is None or (i - last_order_update_idx) >= max_order_age:
             bid_price, ask_price, bid_spread_pct, ask_spread_pct = get_signals_func(

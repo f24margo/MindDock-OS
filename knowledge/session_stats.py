@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 
 INSTANCES_DIR = Path.home() / "hummingbot-api/bots/instances"
 
-CLOSE_TYPES = {1: "TP", 2: "SL", 3: "TimeLimit", 4: "TrailingStop", 5: "EarlyStop"}
+CLOSE_TYPES = {1: "TimeLimit", 2: "SL", 3: "TP", 5: "EarlyStop", 6: "TrailingStop", 8: "Failed"}
 SESSIONS = [("Asia", 0, 8), ("Europe", 8, 15), ("USA", 15, 21), ("Night", 21, 24)]
 
 
